@@ -10,7 +10,16 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const morgan     = require("morgan");
 const passport   = require("passport");
+
 /* Passport Strategies */
+var JwtStrategy = require('passport-jwt').Strategy,
+    ExtractJwt = require('passport-jwt').ExtractJwt;
+var opts = {}
+opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
+opts.secretOrKey = 'secret';
+opts.issuer = 'accounts.examplesoft.com';
+opts.audience = 'yoursite.net';
+
 // const BasicStrategy = require("passport-http").BasicStrategy;
 /* our own modules */
 // const User = require("./models/user");
@@ -41,14 +50,22 @@ if (process.env.NODE_ENV === 'development')
     app.use(morgan('dev'));
 if (process.env.NODE_ENV === 'production')
     app.use(morgan('combined'));
-// app.use(passport.initialize());
+app.use(passport.initialize());
 
-/* authentication: Basic Auth with Passport */
-// passport.use(new BasicStrategy((username, password, done) => {
-//     User.authenticate(username, password).then(user => {
-//         return done(/* no error */null, user);
-//     }).catch(done);
-// }));
+/* authentication: Token Auth with Passport-JWT */
+passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+    User.findOne({id: jwt_payload.sub}, function(err, user) {
+        if (err) {
+            return done(err, false);
+        }
+        if (user) {
+            return done(null, user);
+        } else {
+            return done(null, false);
+            // or you could create a new account
+        }
+    });
+}));
 
 /* our routers */
 app.use("/api/users", require("./routers/user"));
