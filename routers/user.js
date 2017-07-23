@@ -50,6 +50,21 @@ router.get("/:uid", (req, res, next) => {
     return res.send(user);
 });
 
+// read all audios from user
+router.get("/:uid/audio/", (req, res, next) => {
+    // const user = res.locals.user;
+    return res.send(user);
+});
+
+//read one of user's audio
+router.get("/:uid/audio/:aid", (req, res, next) => {
+    return res.send('audio');
+});
+
+router.post("/:uid/audio/", (req, res, next) => {
+    return res.send('all audio');
+});
+
 router.post("/:uid/actions/set-password", (req, res, next) => {
     const password = req.body.password;
     const user = res.locals.user;

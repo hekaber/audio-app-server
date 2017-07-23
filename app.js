@@ -4,12 +4,12 @@
 "use strict";
 
 const express  = require("express");
-const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
-// const mongoose = require("mongoose");
 /* Express Middlewares */
-// const morgan     = require("morgan");
-// const passport   = require("passport");
+const bodyParser = require("body-parser");
+const morgan     = require("morgan");
+const passport   = require("passport");
 /* Passport Strategies */
 // const BasicStrategy = require("passport-http").BasicStrategy;
 /* our own modules */
@@ -18,30 +18,29 @@ const bodyParser = require("body-parser");
 /* create our app */
 const app = express();
 
-app.use(bodyParser.json());
 
 /* configuration */
 app.locals.name   = require("./package.json").name;
 app.locals.config = require(`./config/${process.env.NODE_ENV}`);
 
 /* mongoose & MongoDB stuff */
-// mongoose.Promise = global.Promise; // Use native promises
-// mongoose.set('debug', (process.env.NODE_ENV === 'development'));
+mongoose.Promise = global.Promise; // Use native promises
+mongoose.set('debug', (process.env.NODE_ENV === 'development'));
 
 /* mongoose connection */
-// app.locals.connect = function () {
-//     const dbname = app.locals.config.mongodb.database;
-//     console.log(`NODE_ENV=${process.env.NODE_ENV}, connecting to ${dbname}`);
-//     return mongoose.connect(dbname, {useMongoClient: true});
-// };
+app.locals.connect = function () {
+    const dbname = app.locals.config.mongodb.database;
+    console.log(`NODE_ENV=${process.env.NODE_ENV}, connecting to ${dbname}`);
+    return mongoose.connect(dbname, {useMongoClient: true});
+};
 
 /* Express Middlewares setup */
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({extended: false}))
-// if (process.env.NODE_ENV === 'development')
-//     app.use(morgan('dev'));
-// if (process.env.NODE_ENV === 'production')
-//     app.use(morgan('combined'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}))
+if (process.env.NODE_ENV === 'development')
+    app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'production')
+    app.use(morgan('combined'));
 // app.use(passport.initialize());
 
 /* authentication: Basic Auth with Passport */
