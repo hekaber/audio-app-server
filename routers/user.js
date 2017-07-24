@@ -5,10 +5,11 @@
 
 const express = require("express");
 const auth    = require("../auth");
+const passport = require("passport");
+const router = new express.Router();
+
 /* our applications modules */
 const User = require("../models/user");
-
-const router = new express.Router();
 
 /* when we see the uid parameter, set res.locals.user to the User found in the
  database or return a 404 Not Found directly. */
@@ -24,34 +25,38 @@ router.param('uid', (req, res, next, uid) => {
 });
 
 // create a user
-router.post("/", (req, res, next) => {
-    let body = req.body;
-    if(body.name && body.psw){
-        console.log("I have all!!!");
-        User.create({"name": body.name}).then(created => {
-            created.resetPassword(body.psw).then( _ => {
-                return res.status(201).send(created);
+router.post("/",
+    (req, res, next) => {
+        let body = req.body;
+        if(body.name && body.psw){
+            console.log("I have all!!!");
+            User.create({"name": body.name}).then(created => {
+                created.resetPassword(body.psw).then( _ => {
+                    return res.status(201).send(created);
+                }).catch(err => {
+                    created.remove();
+                    return next(err);
+                });
             }).catch(err => {
-                created.remove();
+                if (err.name === 'ValidationError') {
+                    return res.status(400 /* Bad Request */).send({
+                        message: err.message
+                    });
+                }
                 return next(err);
             });
-        }).catch(err => {
-            if (err.name === 'ValidationError') {
-                return res.status(400 /* Bad Request */).send({
-                    message: err.message
-                });
-            }
-            return next(err);
-        });
+        }
     }
-});
+);
 
 // read all the users
-router.get("/", (req, res, next) => {
-    User.find({}).then(results => {
-        return res.send(results);
-    }).catch(next);
-});
+router.get("/", passport.authenticate('jwt', { session: false }),
+            (req, res, next) => {
+                User.find({}).then(results => {
+                    return res.send(results);
+                }).catch(next);
+            }
+);
 
 // read a user
 router.get("/:uid", (req, res, next) => {

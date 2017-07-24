@@ -7,22 +7,24 @@ const express  = require("express");
 const mongoose = require("mongoose");
 
 /* Express Middlewares */
-const bodyParser = require("body-parser");
-const morgan     = require("morgan");
-const passport   = require("passport");
+const bodyParser  = require("body-parser");
+const morgan      = require("morgan");
+const passport    = require("passport");
+const bcrypt      = require("bcrypt");
+const jwt         = require("jsonwebtoken");
+const passportJWT = require("passport-jwt");
 
 /* Passport Strategies */
-var JwtStrategy = require('passport-jwt').Strategy,
-    ExtractJwt = require('passport-jwt').ExtractJwt;
-var opts = {}
+let JwtStrategy = passportJWT.Strategy,
+    ExtractJwt  = passportJWT.ExtractJwt;
+let opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
 opts.secretOrKey = 'secret';
 opts.issuer = 'accounts.examplesoft.com';
 opts.audience = 'yoursite.net';
 
-// const BasicStrategy = require("passport-http").BasicStrategy;
 /* our own modules */
-// const User = require("./models/user");
+const User = require("./models/user");
 
 /* create our app */
 const app = express();
@@ -46,6 +48,7 @@ app.locals.connect = function () {
 /* Express Middlewares setup */
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
+
 if (process.env.NODE_ENV === 'development')
     app.use(morgan('dev'));
 if (process.env.NODE_ENV === 'production')
@@ -53,23 +56,54 @@ if (process.env.NODE_ENV === 'production')
 app.use(passport.initialize());
 
 /* authentication: Token Auth with Passport-JWT */
-passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-    User.findOne({id: jwt_payload.sub}, function(err, user) {
-        if (err) {
-            return done(err, false);
-        }
-        if (user) {
-            return done(null, user);
-        } else {
-            return done(null, false);
-            // or you could create a new account
-        }
-    });
-}));
+let strategy = new JwtStrategy(opts, function(jwt_payload, next) {
+                    console.log('payload received', jwt_payload);
+                    User.findOne({id: jwt_payload.sub}, function(err, user) {
+                        if (err) {
+                            return next(err, false);
+                        }
+                        if (user) {
+                            return next(null, user);
+                        } else {
+                            return next(null, false);
+                            // or you could create a new account
+                        }
+                    });
+                });
 
+passport.use(strategy);
+
+app.post("/login", function(req, res) {
+    if(req.body.name && req.body.psw){
+        let name = req.body.name;
+        let password = req.body.psw;
+        let loginError = 'Username or password are invalid.'
+        // usually this would be a database call:
+        User.findOne({name: name}).then(user => {
+            if (!user)
+                res.status(404).send(loginError);
+
+            return bcrypt.compare(password, user.hash).then(success => {
+                let payload = { id: user.id };
+                let options = { expiresIn: "1m", audience: opts.audience, issuer: opts.issuer }
+                let token = jwt.sign(payload, opts.secretOrKey, options);
+
+                if(success){
+                    res.json({message: "ok", token: token});
+                    res.status(200).send();
+                }
+                else {
+                    res.status(404).send(loginError);
+                }
+                return (success ? user : false);
+            });
+        }).catch(err => res.status(404).send(err));
+    }
+});
 /* our routers */
-app.use("/api/users", require("./routers/user"));
+app.use("/api/user", require("./routers/user"));
 app.use("/api/audio", require("./routers/audio"));
+
 
 // expose our app to require()
 module.exports = app;
