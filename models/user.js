@@ -27,6 +27,10 @@ userSchema.statics.authenticate = function (username, password) {
     });
 };
 
+userSchema.statics.cryptPassword = function (psw) {
+     return bcrypt.hash(psw, BCRYPT_COST);
+};
+
 /* set the user's password using bcrypt */
 userSchema.methods.resetPassword = function (new_password) {
     return bcrypt.hash(new_password, BCRYPT_COST).then(new_hash => {
