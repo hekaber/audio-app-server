@@ -102,7 +102,7 @@ app.post("/login", function(req, res) {
 });
 /* our routers */
 app.use("/api/user", require("./routers/user"));
-app.use("/api/audio", require("./routers/audio"));
+app.use("/api/media", require("./routers/media"));
 
 
 // expose our app to require()

@@ -29,7 +29,6 @@ router.post("/",
     (req, res, next) => {
         let body = req.body;
         if(body.name && body.psw){
-            console.log("I have all!!!");
             User.create({"name": body.name}).then(created => {
                 created.resetPassword(body.psw).then( _ => {
                     return res.status(201).send(created);
