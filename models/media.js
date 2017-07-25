@@ -15,7 +15,7 @@ const mediaType = {
 const mediaSchema = new mongoose.Schema({
     name: {type: String, required: true},
     type: {type: mediaType, required: true},
-    uploader: {type: String, required: true},
+    uid: {type: String, required: true},
     updated: {type: Date, set: val => Date.now()},
     uploaded: {type: Boolean, default: false},
     shared: {type: Boolean, default: false},
