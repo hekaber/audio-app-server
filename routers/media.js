@@ -21,13 +21,25 @@ router.param('mid', (req, res, next, mid) => {
     }).catch(next);
 });
 
+// get all medias
+router.get("/", (req, res, next) => {
+    Media.find({}).then((results) => {
+       return res.send(results);
+    }).catch(next);
+});
+
+// get media by id
+router.get("/:mid/", (req, res, next) => {
+    return res.status(200).send(req.media);
+});
+
 // upload the media description document
 router.post("/", (req, res, next) => {
     let body = req.body;
     Media.create({
         "name": body.name,
         "type": body.type,
-        "uploader": body.uploader,
+        "uid": body.uid,
         "uploaded": body.uploaded,
         "shared": body.shared
     }).then(created => {
@@ -37,6 +49,16 @@ router.post("/", (req, res, next) => {
     });
 });
 
+router.put("/:mid/", (req, res, next) => {
+    let media = req.media;
+
+    media.update(req.body).then((updated) => {
+        console.log(updated);
+        return res.status(200).send('updated');
+    }).catch((err) => {
+        return res.status(400).send(err);
+    });
+});
 // upload a media file
 router.post("/:mid/file/", (req, res, next) => {
     let media = req.media;
@@ -44,17 +66,18 @@ router.post("/:mid/file/", (req, res, next) => {
     upload(req, res, function(err){
         if(err){
             console.log(err);
-            res.status(400).send(err);
+            return res.status(400).send(err);
         }
         else {
             console.log(req.file, 'file');
             media.update({
-                file: req.file
+                file: req.file,
+                uploaded: true
             }).then((updated) => {
                 console.log(updated);
-                res.status(200).send('uploaded and binded to file');
+                return res.status(200).send('uploaded and binded to file');
             }).catch((err) => {
-                res.status(400).send('uploaded but error during file binding' + err);
+                return res.status(400).send('uploaded but error during file binding' + err);
             });
 
         }
