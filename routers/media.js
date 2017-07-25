@@ -24,13 +24,14 @@ router.param('mid', (req, res, next, mid) => {
 // get all medias
 router.get("/", (req, res, next) => {
     Media.find({}).then((results) => {
-       return res.send(results);
+        return res.send(results);
     }).catch(next);
 });
 
 // get media by id
 router.get("/:mid/", (req, res, next) => {
-    return res.status(200).send(req.media);
+    const media = req.media;
+    return res.status(200).send(media);
 });
 
 // upload the media description document
@@ -50,7 +51,7 @@ router.post("/", (req, res, next) => {
 });
 
 router.put("/:mid/", (req, res, next) => {
-    let media = req.media;
+    const media = req.media;
 
     media.update(req.body).then((updated) => {
         console.log(updated);
