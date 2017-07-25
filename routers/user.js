@@ -10,18 +10,25 @@ const router = new express.Router();
 
 /* our applications modules */
 const User = require("../models/user");
+const Media = require("../models/media");
 
 /* when we see the uid parameter, set res.locals.user to the User found in the
  database or return a 404 Not Found directly. */
 router.param('uid', (req, res, next, uid) => {
-    User.findById(uid).then(user => {
-        if (!user) {
-            return res.status(404 /* Not Found */).send();
-        } else {
-            res.locals.user = user;
-            return next();
-        }
-    }).catch(next);
+    if (mid.match(/^[0-9a-fA-F]{24}$/)) {
+
+        User.findById(uid).then(user => {
+            if (!user) {
+                return res.status(404 /* Not Found */).send();
+            } else {
+                res.locals.user = user;
+                return next();
+            }
+        }).catch(next);
+    }
+    else {
+        return res.status(400).send('invalid id format');
+    }
 });
 
 // create a user
@@ -49,7 +56,7 @@ router.post("/",
 );
 
 // read all the users
-router.get("/", passport.authenticate('jwt', { session: false }),
+router.get("/", auth.token(),
             (req, res, next) => {
                 User.find({}).then(results => {
                     return res.send(results);
@@ -58,19 +65,26 @@ router.get("/", passport.authenticate('jwt', { session: false }),
 );
 
 // read a user
-router.get("/:uid", (req, res, next) => {
-    const user = res.locals.user;
-    return res.send(user);
-});
+router.get("/:uid", auth.token(),
+    (req, res, next) => {
+        const user = res.locals.user;
+        return res.send(user);
+    }
+);
 
-// read all audios from user
-router.get("/:uid/audio/", (req, res, next) => {
-    // const user = res.locals.user;
+// read all medias from user
+router.get("/:uid/medias/", (req, res, next) => {
+    let id = req.param.uid;
+    Media.find({"uid": id}).then((results) => {
+        return res.status(200).send(results);
+    }).catch((err) => {
+        return res.status(400).send(err);
+    });
     return res.send(user);
 });
 
 //read one of user's audio
-router.get("/:uid/audio/:aid", (req, res, next) => {
+router.get("/:uid/medias/:mid", (req, res, next) => {
     return res.send('audio');
 });
 
@@ -78,18 +92,20 @@ router.post("/:uid/audio/", (req, res, next) => {
     return res.send('all audio');
 });
 
-router.post("/:uid/actions/set-password", (req, res, next) => {
-    const password = req.body.password;
-    const user = res.locals.user;
-    if (user.hash)
-        return res.send(400 /* Bad Request */);
-    user.resetPassword(password).then(() => {
-        res.status(200 /* OK */).send();
-    }).catch(next);
-});
+router.post("/:uid/actions/set-password", auth.token(),
+    (req, res, next) => {
+        const password = req.body.password;
+        const user = res.locals.user;
+        if (user.hash)
+            return res.send(400);
+        user.resetPassword(password).then(() => {
+            res.status(200).send();
+        }).catch(next);
+    }
+);
 
 // change a user's password
-router.post("/:uid/actions/reset-password", auth.basic(), function (req, res, next) {
+router.post("/:uid/actions/reset-password", auth.token(), function (req, res, next) {
     const logged_in = req.user;
     const target = res.locals.user;
     console.dir(logged_in.toJSON(), {colors: true});
@@ -108,7 +124,7 @@ router.post("/:uid/actions/reset-password", auth.basic(), function (req, res, ne
 
 
 // delete a user
-router.delete("/:uid", auth.basic(), function (req, res, next) {
+router.delete("/:uid", auth.token(), function (req, res, next) {
     const logged_in = req.user;
     const target = res.locals.user;
     if (logged_in._id.toString() === target._id.toString())

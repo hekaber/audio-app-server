@@ -11,14 +11,19 @@ let upload = multer({ dest: ' uploads/'}).single('testfile');
 /* when we see the uid parameter, set res.locals.user to the User found in the
  database or return a 404 Not Found directly. */
 router.param('mid', (req, res, next, mid) => {
-    Media.findById(mid).then(media => {
-        if (!media) {
-            return res.status(404 /* Not Found */).send();
-        } else {
-            req.media = media;
-            return next();
-        }
-    }).catch(next);
+    if (mid.match(/^[0-9a-fA-F]{24}$/)) {
+        Media.findById(mid).then(media => {
+            if (!media) {
+                return res.status(404 /* Not Found */).send();
+            } else {
+                req.media = media;
+                return next();
+            }
+        }).catch(next);
+    }
+    else {
+        return res.status(400).send('invalid id format');
+    }
 });
 
 // get all medias
