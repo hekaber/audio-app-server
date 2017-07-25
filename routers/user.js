@@ -15,7 +15,7 @@ const Media = require("../models/media");
 /* when we see the uid parameter, set res.locals.user to the User found in the
  database or return a 404 Not Found directly. */
 router.param('uid', (req, res, next, uid) => {
-    if (mid.match(/^[0-9a-fA-F]{24}$/)) {
+    if (uid.match(/^[0-9a-fA-F]{24}$/)) {
 
         User.findById(uid).then(user => {
             if (!user) {
