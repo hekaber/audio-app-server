@@ -102,7 +102,7 @@ app.post("/login", function(req, res) {
 });
 
 // create a user
-app.post("/signup",
+app.post("/signin",
     (req, res, next) => {
         let body = req.body;
         if(body.name && body.psw){
