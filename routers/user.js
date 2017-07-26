@@ -40,6 +40,12 @@ router.get("/", auth.token(),
             }
 );
 
+router.get("/authenticate", auth.token(),
+    (req, res, next) => {
+        return res.send('ok');
+    }
+);
+
 // read a user
 router.get("/:uid", auth.token(),
     (req, res, next) => {
@@ -70,7 +76,7 @@ router.post("/:uid/audio/", (req, res, next) => {
 
 router.post("/:uid/actions/set-password", auth.token(),
     (req, res, next) => {
-        const password = req.body.password;
+        const password = req.body.psw;
         const user = res.locals.user;
         if (user.hash)
             return res.send(400);
@@ -91,7 +97,7 @@ router.post("/:uid/actions/reset-password", auth.token(), function (req, res, ne
     else
         res.status(403 /* Forbidden */).end();
 }, (req, res, next) => {
-    const password = req.body.password;
+    const password = req.body.psw;
     const user = res.locals.user;
     user.resetPassword(password).then(() => {
         res.status(200 /* OK */).send();
