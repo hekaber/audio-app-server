@@ -31,30 +31,6 @@ router.param('uid', (req, res, next, uid) => {
     }
 });
 
-// create a user
-router.post("/",
-    (req, res, next) => {
-        let body = req.body;
-        if(body.name && body.psw){
-            User.create({"name": body.name}).then(created => {
-                created.resetPassword(body.psw).then( _ => {
-                    return res.status(201).send(created);
-                }).catch(err => {
-                    created.remove();
-                    return next(err);
-                });
-            }).catch(err => {
-                if (err.name === 'ValidationError') {
-                    return res.status(400 /* Bad Request */).send({
-                        message: err.message
-                    });
-                }
-                return next(err);
-            });
-        }
-    }
-);
-
 // read all the users
 router.get("/", auth.token(),
             (req, res, next) => {

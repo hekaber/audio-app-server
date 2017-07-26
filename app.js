@@ -100,6 +100,31 @@ app.post("/login", function(req, res) {
         }).catch(err => res.status(404).send(err));
     }
 });
+
+// create a user
+app.post("/signup",
+    (req, res, next) => {
+        let body = req.body;
+        if(body.name && body.psw){
+            User.create({"name": body.name}).then(created => {
+                created.resetPassword(body.psw).then( _ => {
+                    return res.status(201).send(created);
+                }).catch(err => {
+                    created.remove();
+                    return next(err);
+                });
+            }).catch(err => {
+                if (err.name === 'ValidationError') {
+                    return res.status(400 /* Bad Request */).send({
+                        message: err.message
+                    });
+                }
+                return next(err);
+            });
+        }
+    }
+);
+
 /* our routers */
 app.use("/api/user", require("./routers/user"));
 app.use("/api/media", require("./routers/media"));
