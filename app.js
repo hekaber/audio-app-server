@@ -49,6 +49,16 @@ app.locals.connect = function () {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
 
+/**
+ * Autorise les connexions CORS depuis tous les serveur, les method GET et POST et les headers "Content-Type"
+ */
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE");
+    res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
 if (process.env.NODE_ENV === 'development')
     app.use(morgan('dev'));
 if (process.env.NODE_ENV === 'production')
