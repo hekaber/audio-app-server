@@ -12,13 +12,13 @@ const BCRYPT_COST = 4; // minimum=4
 
 /* Schema */
 const userSchema = new mongoose.Schema({
-    name:  {type: String, required: true, unique: true},
+    email:  {type: String, required: true, unique: true},
     hash:  {type: String, set: val => this.hash},
 });
 
 /* authentication using bcrypt */
-userSchema.statics.authenticate = function (username, password) {
-    return this.findOne({name: username}).then(user => {
+userSchema.statics.authenticate = function (usermail, password) {
+    return this.findOne({email: usermail}).then(user => {
         if (!user)
             return false;
         return bcrypt.compare(password, user.hash).then(success => {

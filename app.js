@@ -74,12 +74,12 @@ let strategy = new JwtStrategy(opts, function(jwt_payload, next) {
 passport.use(strategy);
 
 app.post("/login", function(req, res) {
-    if(req.body.name && req.body.psw){
-        let name = req.body.name;
+    if(req.body.email && req.body.psw){
+        let email = req.body.email;
         let password = req.body.psw;
         let loginError = 'Username or password are invalid.'
         // usually this would be a database call:
-        User.findOne({name: name}).then(user => {
+        User.findOne({email: email}).then(user => {
             if (!user)
                 res.status(404).send(loginError);
 
@@ -105,8 +105,8 @@ app.post("/login", function(req, res) {
 app.post("/signin",
     (req, res, next) => {
         let body = req.body;
-        if(body.name && body.psw){
-            User.create({"name": body.name}).then(created => {
+        if(body.email && body.psw){
+            User.create({"email": body.email}).then(created => {
                 created.resetPassword(body.psw).then( _ => {
                     return res.status(201).send(created);
                 }).catch(err => {
