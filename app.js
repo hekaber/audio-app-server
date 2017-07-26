@@ -106,4 +106,4 @@ app.use("/api/media", require("./routers/media"));
 
 
 // expose our app to require()
-module.exports = app;
+module.exports = { app, opts};

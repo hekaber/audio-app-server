@@ -1,13 +1,16 @@
 "use strict";
 
-const express  = require("express");
-const multer = require("multer");
-const router = new express.Router();
+const express = require("express");
+const multer  = require("multer");
+const router  = new express.Router();
+const jwt     = require("jsonwebtoken");
 
 let upload = multer({ dest: ' uploads/'}).single('testfile');
 
 const Media = require("../models/media");
 const auth = require("../auth");
+const appModules = require("../app");
+const opts = appModules.opts;
 
 /* when we see the uid parameter, set res.locals.user to the User found in the
  database or return a 404 Not Found directly. */
@@ -44,7 +47,7 @@ router.get("/:mid/", auth.token(),
     }
 );
 
-// upload the media description document
+// create the media description document
 router.post("/", auth.token(),
     (req, res, next) => {
         let body = req.body;
@@ -59,6 +62,29 @@ router.post("/", auth.token(),
         }).catch(err => {
             return res.status(400).send({message: err.message});
         });
+    }
+);
+
+//delete the media description document
+router.delete("/:mid/", auth.token(),
+    (req, res, next) => {
+        let media = req.media;
+
+        //we assume the authorization header has been checked in auth token
+        let authorization = req.headers.authorization, decoded;
+        try {
+            let tok = authorization.split(' ')[1];
+            decoded = jwt.verify(tok,'secret');
+        }
+        catch (err){
+            return res.status(401).send('unauthorized decoded' + err);
+        }
+        if(decoded.id === media.uid){
+            media.remove().then(removed => res.send(removed)).catch(next);
+        }
+        else {
+            return res.status(401).send('Only the media owner is allowed to delete')
+        }
     }
 );
 

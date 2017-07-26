@@ -3,8 +3,9 @@
  */
 "use strict";
 
-const app = require("./app");
+const appModules = require("./app");
 
+let app = appModules.app;
 // connect our app to the MongoDB database.
 app.locals.connect().then(() => {
     console.log(app.locals.name + ' connected to MongoDB');
