@@ -138,6 +138,7 @@ app.post("/signin",
 /* our routers */
 app.use("/api/user", require("./routers/user"));
 app.use("/api/media", require("./routers/media"));
+app.use("/api/tag", require("./routers/tag"));
 
 
 // expose our app to require()
