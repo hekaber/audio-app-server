@@ -19,6 +19,7 @@ const mediaSchema = new mongoose.Schema({
     updated: {type: Date, set: val => Date.now()},
     uploaded: {type: Boolean, default: false},
     shared: {type: Boolean, default: false},
+    tags: [String],
     file: {type: Object}
 });
 
