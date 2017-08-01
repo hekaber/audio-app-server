@@ -84,6 +84,10 @@ let strategy = new JwtStrategy(opts, function(jwt_payload, next) {
 passport.use(strategy);
 
 app.post("/login", function(req, res) {
+    if(req.body.email ==="" || req.body.psw === ""
+        || req.body.email === undefined || req.body.psw === undefined){
+        return res.status(400).send('Must give email or password.');
+    }
     if(req.body.email && req.body.psw){
         let email = req.body.email;
         let password = req.body.psw;
@@ -95,7 +99,7 @@ app.post("/login", function(req, res) {
 
             return bcrypt.compare(password, user.hash).then(success => {
                 let payload = { id: user.id };
-                let options = { expiresIn: "1m", audience: opts.audience, issuer: opts.issuer }
+                let options = { expiresIn: "24h", audience: opts.audience, issuer: opts.issuer }
                 let token = jwt.sign(payload, opts.secretOrKey, options);
 
                 if(success){

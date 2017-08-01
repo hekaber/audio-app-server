@@ -56,7 +56,8 @@ router.post("/", auth.token(),
             "type": body.type,
             "uid": body.uid,
             "uploaded": body.uploaded,
-            "shared": body.shared
+            "shared": body.shared,
+            "tags": body.tags
         }).then(created => {
             return res.status(201).send(created);
         }).catch(err => {
