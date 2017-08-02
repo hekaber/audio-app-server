@@ -56,13 +56,12 @@ router.get("/:uid", auth.token(),
 
 // read all medias from user
 router.get("/:uid/medias/", (req, res, next) => {
-    let id = req.param.uid;
+    let id = req.params.uid;
     Media.find({"uid": id}).then((results) => {
         return res.status(200).send(results);
     }).catch((err) => {
         return res.status(400).send(err);
     });
-    return res.send(user);
 });
 
 //read one of user's audio

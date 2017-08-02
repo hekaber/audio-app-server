@@ -103,7 +103,7 @@ app.post("/login", function(req, res) {
                 let token = jwt.sign(payload, opts.secretOrKey, options);
 
                 if(success){
-                    res.json({message: "ok", token: token});
+                    res.json({message: "ok", token: token, userId: user.id});
                     res.status(200).send();
                 }
                 else {
