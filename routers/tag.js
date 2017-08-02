@@ -55,18 +55,19 @@ router.delete("/:tid/", auth.token(),
 router.post("/", auth.token(),
     (req, res, next) => {
         let body = req.body;
-        let tagName = body.name.toLowerCase();
+        let name = body.name.toLowerCase();
+        let description = body.description.toLowerCase();
 
-        Tag.find({name: tagName}).then((results) => {
+        Tag.find({name: name}).then((results) => {
             if(!results){
-                Tag.create({"name": tagName}).then(created => {
+                Tag.create({"name": name, "description": description}).then(created => {
                     return res.status(201).send(created);
                 }).catch(err => {
                     return res.status(400).send({message: err.message});
                 });
             }
             else {
-                return res.status(400).send('tag ' + tagName + ' already exists');
+                return res.status(400).send('tag ' + name + ' already exists');
             }
         }).catch(next);
 
