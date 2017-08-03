@@ -87,7 +87,8 @@ router.get("/:mid/popularity", auth.token(),
         });
     }
 );
-//
+
+
 router.post("/:mid/popularity", auth.token(),
     (req, res, next) => {
       let mediaId = req.params.mid;
@@ -105,11 +106,10 @@ router.post("/:mid/popularity", auth.token(),
       MediaPopularity.find({mid: mediaId}).then((results) => {
         if(results.length === 0){
           let popObj = {"mid": mediaId, "likes": [], "dislikes": []};
-
-          if(body.message === 'like'){
+          if(body.taste === 'like'){
             popObj.likes.push(decoded.id);
           }
-          else if (body.message === 'dislike'){
+          else if (body.taste === 'dislike'){
             popObj.dislikes.push(decoded.id);
           }
           MediaPopularity.create(popObj).then((created) => {
@@ -119,8 +119,42 @@ router.post("/:mid/popularity", auth.token(),
           });
         }
         else {
-          let mediaPop = result[0];
-          return res.status(200).send(mediaPop);
+          let mediaPop = results[0];
+          // console.log(mediaPop);
+          if(body.taste === 'like'){
+              //check if user already liked
+              if (mediaPop.likes.indexOf(decoded.id) > -1){
+                return res.status(400).send({message: 'already liked'});
+              }
+              //check if user disliked
+              let disindex = mediaPop.dislikes.indexOf(decoded.id);
+              if ( disindex > -1) {
+                  mediaPop.dislikes.splice(disindex, 1);
+              }
+              mediaPop.likes.push(decoded.id);
+          }
+          else if (body.taste === 'dislike'){
+              //check if user already disliked
+              if(mediaPop.dislikes.indexOf(decoded.id) > -1){
+                  return res.status(400).send({message: 'already disliked'});
+              }
+
+              let liindex = mediaPop.likes.indexOf(decoded.id);
+              if (liindex > -1){
+                  mediaPop.likes.splice(liindex, 1);
+              }
+              mediaPop.dislikes.push(decoded.id);
+          }
+          else {
+              return res.status(400).send({message : 'unknown taste'});
+          }
+          MediaPopularity.update({_id: mediaPop._id}, { $set: {dislikes: mediaPop.dislikes, likes: mediaPop.likes}}).then((updated) => {
+              console.log('update');
+              console.log(updated);
+              return res.status(200).send(updated);
+          }).catch((err) => {
+              return res.status(400).send({message: err.message});
+          });
         }
       }).catch((err) => {
         return res.status(400).send(err);
