@@ -8,6 +8,8 @@ const jwt     = require("jsonwebtoken");
 let upload = multer({ dest: ' uploads/'}).single('testfile');
 
 const Media = require("../models/media");
+const MediaPopularity = require("../models/media-popularity");
+
 const auth = require("../auth");
 const appModules = require("../app");
 const opts = appModules.opts;
@@ -30,6 +32,22 @@ router.param('mid', (req, res, next, mid) => {
     }
 });
 
+// router.param('mpid', (req, res, next, mid) => {
+//     if (mid.match(/^[0-9a-fA-F]{24}$/)) {
+//         MediaPopularity.findById(mpid).then(mediaPop => {
+//             if (!mediaPop) {
+//                 return res.status(404 /* Not Found */).send();
+//             } else {
+//                 req.mediaPop = mediaPop;
+//                 return next();
+//             }
+//         }).catch(next);
+//     }
+//     else {
+//         return res.status(400).send('invalid id format');
+//     }
+// });
+
 // get all medias
 router.get("/", auth.token(),
     (req, res, next) => {
@@ -46,6 +64,59 @@ router.get("/:mid/", auth.token(),
         return res.status(200).send(media);
     }
 );
+
+router.get("/:mid/popularity", auth.token(),
+    (req, res, next) => {
+        let mediaId = req.params.mid;
+        MediaPopularity.find({mid: mediaId}).then((results) => {
+            return res.status(200).send(results);
+        }).catch((err) => {
+            return res.status(400).send(err);
+        });
+    }
+);
+//
+// router.put("/:mid/popularity", auth.token(),
+//     (req, res, next) => {
+//         let mediaId = req.params.mid;
+//         MediaPopularity.find({mid: mediaId}).then((results) => {
+//             let body = req.body;
+//             let mediaPop = results[0];
+//             if (body.like && body.dislike){
+//                 return res.status(400).send('Cannot like and dislike at the same time.');
+//             }
+//             if (body.like && mediaPop.likes.indexOf(body.like) <= -1){
+//                 mediaPop.likes.push(body.like);
+//                 //check if user did not dislike before
+//                 let index = mediaPop.dislikes.indexOf(body.like);
+//                 if (index > -1){
+//                     mediaPop.dislikes.splice(index, 1);
+//                 }
+//                 mediaPop.update().then((updated) => {
+//                     console.log(updated);
+//                     return res.status(200).send('liked!');
+//                 });
+//
+//             }
+//
+//             if (body.dislike && mediaPop.dislikes.indexOf(body.dislike) <= -1){
+//                 mediaPop.dislikes.push(body.dislike);
+//                 //check if user did not like before
+//                 let index = mediaPop.likes.indexOf(body.dislike);
+//                 if (index > -1){
+//                     mediaPop.likes.splice(index, 1);
+//                 }
+//                 mediaPop.update().then((updated) => {
+//                     console.log(updated);
+//                     return res.status(200).send('disliked!');
+//                 });
+//             }
+//         }).catch((err) => {
+//             return res.status(400).send(err);
+//         });
+//     }
+// );
+
 
 // create the media description document
 router.post("/", auth.token(),

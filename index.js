@@ -11,7 +11,8 @@ app.locals.connect().then(() => {
     console.log(app.locals.name + ' connected to MongoDB');
 
     // listen to the configured port for incoming requests.
-    const port = app.locals.config.server.port;
+    const port = process.env.NODE_ENV || app.locals.config.server.port;
+
     app.listen(port, function () {
         console.log(app.locals.name + ' listening on port ' + port);
     });

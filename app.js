@@ -91,7 +91,7 @@ app.post("/login", function(req, res) {
     if(req.body.email && req.body.psw){
         let email = req.body.email;
         let password = req.body.psw;
-        let loginError = 'Username or password are invalid.'
+        let loginError = 'Username or password are invalid.';
         // usually this would be a database call:
         User.findOne({email: email}).then(user => {
             if (!user)
@@ -99,7 +99,7 @@ app.post("/login", function(req, res) {
 
             return bcrypt.compare(password, user.hash).then(success => {
                 let payload = { id: user.id };
-                let options = { expiresIn: "24h", audience: opts.audience, issuer: opts.issuer }
+                let options = { expiresIn: "24h", audience: opts.audience, issuer: opts.issuer };
                 let token = jwt.sign(payload, opts.secretOrKey, options);
 
                 if(success){

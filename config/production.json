@@ -1,0 +1,8 @@
+{
+  "server": {
+    "port": 3000
+  },
+  "mongodb": {
+    "database": "mongodb://admin:gureto01@ds129593.mlab.com:29593/audioapp"
+  }
+}

@@ -29,7 +29,7 @@ router.param('tid', (req, res, next, tid) => {
 // get all tags
 router.get("/", auth.token(),
     (req, res, next) => {
-        Tag.find({}).then((results) => {
+        Tag.find({}, null, {sort: {name: 1}}).then((results) => {
             return res.send(results);
         }).catch(next);
     }
@@ -59,7 +59,7 @@ router.post("/", auth.token(),
         let description = body.description.toLowerCase();
 
         Tag.find({name: name}).then((results) => {
-            if(!results){
+            if(results.length === 0){
                 Tag.create({"name": name, "description": description}).then(created => {
                     return res.status(201).send(created);
                 }).catch(err => {
