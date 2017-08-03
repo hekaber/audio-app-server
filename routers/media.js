@@ -57,6 +57,16 @@ router.get("/", auth.token(),
     }
 );
 
+router.get("/popularities", auth.token(),
+    (req, res, next) => {
+        MediaPopularity.find({}).then((results) => {
+            return res.status(200).send(results);
+        }).catch((err) => {
+            return res.status(400).send(err);
+        });
+    }
+);
+
 // get media by id
 router.get("/:mid/", auth.token(),
     (req, res, next) => {
@@ -64,6 +74,8 @@ router.get("/:mid/", auth.token(),
         return res.status(200).send(media);
     }
 );
+
+
 
 router.get("/:mid/popularity", auth.token(),
     (req, res, next) => {
@@ -76,6 +88,45 @@ router.get("/:mid/popularity", auth.token(),
     }
 );
 //
+router.post("/:mid/popularity", auth.token(),
+    (req, res, next) => {
+      let mediaId = req.params.mid;
+      let body = req.body;
+      //we assume the authorization header has been checked in auth token
+      let authorization = req.headers.authorization, decoded;
+      try {
+          let tok = authorization.split(' ')[1];
+          decoded = jwt.verify(tok,'secret');
+      }
+      catch (err){
+          return res.status(401).send('unauthorized decoded' + err);
+      }
+
+      MediaPopularity.find({mid: mediaId}).then((results) => {
+        if(results.length === 0){
+          let popObj = {"mid": mediaId, "likes": [], "dislikes": []};
+
+          if(body.message === 'like'){
+            popObj.likes.push(decoded.id);
+          }
+          else if (body.message === 'dislike'){
+            popObj.dislikes.push(decoded.id);
+          }
+          MediaPopularity.create(popObj).then((created) => {
+            return res.status(200).send(created);
+          }).catch(err => {
+              return res.status(400).send({message: err.message});
+          });
+        }
+        else {
+          let mediaPop = result[0];
+          return res.status(200).send(mediaPop);
+        }
+      }).catch((err) => {
+        return res.status(400).send(err);
+      });
+    }
+);
 // router.put("/:mid/popularity", auth.token(),
 //     (req, res, next) => {
 //         let mediaId = req.params.mid;
